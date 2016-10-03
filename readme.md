@@ -16,8 +16,7 @@ This is a simple Yik Yak/Twitter type clone. The app allows the user to register
 * MySQL
 
 ##Local Installation Requirements
-pip install flask
-pip install flask-mysql
-pip install bcrypt
+`pip install flask flask-mysql bcrypt`
+`python main.py`
 
 ##URL to Live Demo

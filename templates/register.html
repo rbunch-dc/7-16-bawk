@@ -1,0 +1,34 @@
+{% extends 'layout.html' %}
+{% block body %}
+
+{% if message %}
+  <div class="alert alert-danger">{{message}}</div>
+{% endif %}
+
+
+<form action="/register_submit" method="POST">
+  <div class="form-group">
+    <label>Real Name</label>
+    <input type="name" class="form-control" placeholder="Name" name="name">
+  </div>
+  <div class="form-group">
+    <label>User Name</label>
+    <input type="user_name" class="form-control" placeholder="user name" name="user_name">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputEmail1">Email address</label>
+    <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Email" name="email">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Password</label>
+    <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" name="password">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputFile">File input</label>
+    <input type="file" id="exampleInputFile" name="file">
+    <p class="help-block">Upload an Image!</p>
+  </div>
+  <button type="submit" class="btn btn-default">Submit</button>
+</form>
+
+{% endblock %}
