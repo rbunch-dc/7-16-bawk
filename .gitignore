@@ -1,0 +1,6 @@
+.sass-cache/*
+inlcude/*
+bin/*
+lib/*
+.Python
+.DS_Store
