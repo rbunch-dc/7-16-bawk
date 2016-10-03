@@ -2,6 +2,7 @@
 from flask import Flask, render_template, redirect, request
 # Import the mysql module
 from flaskext.mysql import MySQL
+import bcrypt
 
 # Set up mysql connection here later
 mysql = MySQL()
@@ -48,6 +49,8 @@ def register_submit():
 		real_name = request.form['name']
 		password = request.form['password'].encode('utf-8')
 		hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
+		print "---------------"
+		print hashed_password
 		username_insert_query = "INSERT INTO user VALUES ()"		
 		conn.commit()
 		return "You are logged in type page"
@@ -58,11 +61,12 @@ def register_submit():
 	# Second, if it is taken, send them back to the register page with a message
 	# Second B, if it's not taken, then isert the user into mysql
 
-@app('/login_submit', methods=['POST'])
+@app.route('/login_submit', methods=['POST'])
 def login_submit():
 	# To check a hash against english:
 	if bcrypt.hashpw(password.encode('utf-8'), hashsed_passwrod_from_mysql) == hashsed_passwrod_from_mysql:
 		# We have a match
+		return "match"
 
 if __name__ == "__main__":
 	app.run(debug=True)
