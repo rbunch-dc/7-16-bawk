@@ -149,6 +149,8 @@ def process_vote():
 		if check_user_vote_direction_result is None:
 			# User has voted, but not this direction. Update
 			update_user_vote_query = "UPDATE votes SET vote_type = %s WHERE uid = '%s' AND pid = '%s'" % (vote_type, session['id'], pid)
+			cursor.execute(update_user_vote_query)
+			conn.commit()
 			return "voteChanged"
 		else:
 			# User has already voted this directino on this post. No dice.
