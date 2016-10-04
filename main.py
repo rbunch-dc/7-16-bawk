@@ -1,5 +1,5 @@
 # Import flask stuff
-from flask import Flask, render_template, redirect, request, session
+from flask import Flask, render_template, redirect, request, session, jsonify
 # Import the mysql module
 from flaskext.mysql import MySQL
 import bcrypt
@@ -18,6 +18,7 @@ mysql.init_app(app)
 # Secret key for session
 app.secret_key = 'HSDG#$%T34t35t3tREGgfsDG34t34543t3455fdsfgdfsgd'
 
+
 #Make one connection and use it over, and over, and over...
 conn = mysql.connect()
 # set up a cursor object whihc is what the sql object uses to connect and run queries
@@ -27,7 +28,13 @@ cursor = conn.cursor()
 # Create route for home page
 @app.route('/')
 def index():
-	return render_template('index.html')
+	get_bawks_query = "SELECT b.id, b.post_content, b.current_vote, b.timestamp, u.username, b.current_vote FROM bawks AS b INNER JOIN user u ON b.uid = u.id WHERE 1"
+	cursor.execute(get_bawks_query)
+	get_bawks_result = cursor.fetchall()
+	if get_bawks_result is not None:
+		return render_template('index.html', bawks = get_bawks_result)
+	else:
+		return render_template('index.html', message = "No bawks yet!")
 
 @app.route('/register')
 def register():
@@ -54,11 +61,12 @@ def register_submit():
 		email = request.form['email']
 		password = request.form['password'].encode('utf-8')
 		hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
-		print "---------------"
-		print hashed_password
+		# print "---------------"
+		# print hashed_password
 		username_insert_query = "INSERT INTO user (real_name, username, password, email) VALUES ('"+real_name+"', '"+user_name+"', '"+hashed_password+"', '"+email+"')"		
 		cursor.execute(username_insert_query)
 		conn.commit()
+		session['username'] = user_name
 		return "You are logged in type page"
 	else:
 		return redirect('/register?username=taken')
@@ -74,7 +82,7 @@ def login():
 
 @app.route('/login_submit', methods=['POST'])
 def login_submit():
-	check_username_query = "SELECT password FROM user WHERE username = '%s'" % request.form['username']
+	check_username_query = "SELECT password, id FROM user WHERE username = '%s'" % request.form['username']
 	cursor.execute(check_username_query)
 	check_username_result = cursor.fetchone()
 	password = request.form['password'].encode('utf-8')
@@ -86,6 +94,7 @@ def login_submit():
 		if bcrypt.hashpw(password, hashsed_password) == hashsed_password:
 			# We have a match
 			session['username'] = request.form['username']
+			session['id'] = check_username_result[1]
 			return render_template('index.html')
 		else:
 			return redirect('/login',
@@ -102,6 +111,37 @@ def logout():
 	session.clear()	
 	return redirect('/?message=LoggedOut')
 
+@app.route('/post_submit', methods=["POST"])
+def post_submit():
+	post_content = request.form['post_content']
+	get_user_id_query = "SELECT id FROM user WHERE username = '%s'" %session['username']
+	cursor.execute(get_user_id_query)
+	get_user_id_result = cursor.fetchone()
+	user_id = get_user_id_result[0]
+
+	insert_post_query = "INSERT INTO bawks (post_content, uid, current_vote) VALUES ('"+post_content+"', "+str(user_id)+", 0)"
+	cursor.execute(insert_post_query)
+	conn.commit()
+	return redirect('/')
+
+@app.route('/process_vote', methods=['POST'])
+def process_vote():
+	# check to see, has th euser voted on this particular item
+	pid = request.form['vid'] # the post they voted on. This came from jquery $.ajax
+	vote_type = request.form['voteType']
+	check_user_votes_query = "SELECT * FROM votes INNER JOIN user ON user.id = votes.uid WHERE user.username = '%s' AND votes.pid = '%s'" % (session['username'], pid)
+	print check_user_votes_query
+	cursor.execute(check_user_votes_query)
+	check_user_votes_result = cursor.fetchone()
+
+	# It's possible we get None back, becaues the user hsn't voted on this post
+	if check_user_votes_result is None:
+		# User hasn't voted. Insert.
+		insert_user_vote_query = "INSERT INTO votes (pid, uid, vote_type) VALUES ('"+pid+"', '"+session['id']+"', '"+vote_type+"')"
+		print insert_user_vote_query
+		cursor.execute(insert_user_vote_query)
+		conn.commit()
+		return jsonify("voteCounted")
 
 if __name__ == "__main__":
 	app.run(debug=True)

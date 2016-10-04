@@ -1,6 +1,52 @@
 {% extends 'layout.html' %}
 {% block body %}
 
+<img src="https://images6.alphacoders.com/368/368375.jpg" height="300px" width="100%">
+
 <div class="well well-lg">This is the main page</div>
+
+<div class="col-sm-8 col-offset-sm-2">
+	
+	<form id="submit-post-form" action="post_submit" method="POST">
+		<label>What can you say that will help save the Manatees?</label>
+		<textarea name="post_content" cols="60" rows="8"></textarea>
+		<!-- <input type="hidden" value={{user_id}} -->
+		<button type="submit" class="btn btn-primary">Submit Post</button>
+	</form>
+
+	{% for bawk in bawks: %}
+		<div class="row home-post" style="background-color: white; border-bottom: 3px solid #1d96d7; border-radius: 5px;">
+			<div class="col-md-8 text-left">{{bawk[1]}} -- posted by {{bawk[4]}}</div>
+			<div class="col-md-2">
+				<div class="vote vote-up" post_id="{{bawk[0]}}">
+					<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="imgView" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 451.847 451.846" style="enable-background:new 0 0 451.847 451.846;" xml:space="preserve" class="detail convertSvgInline replaced-svg" data-id="32323" data-kw="navigate6">
+						<g>
+							<path style="fill:#4099ff;" d="M248.292,106.406l194.281,194.29c12.365,12.359,12.365,32.391,0,44.744c-12.354,12.354-32.391,12.354-44.744,0   L225.923,173.529L54.018,345.44c-12.36,12.354-32.395,12.354-44.748,0c-12.359-12.354-12.359-32.391,0-44.75L203.554,106.4   c6.18-6.174,14.271-9.259,22.369-9.259C234.018,97.141,242.115,100.232,248.292,106.406z"></path>
+						</g>
+					</svg>			
+				</div>
+				<div class="vote-up-down-number" up-down-id="{{bawk[0]}}">
+					{{bawk[2]}}
+				</div>
+
+				<div class="vote vote-down" post_id="{{bawk[0]}}">
+					<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="imgView" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 307.053 307.053" style="enable-background:new 0 0 307.053 307.053;" xml:space="preserve" class="detail convertSvgInline replaced-svg" data-id="26046" data-kw="down14">
+						<g id="_x34_86._Down">
+							<g>
+								<path style="fill:#4099ff;" d="M302.445,80.796l-11.101-11.103c-6.123-6.131-16.074-6.131-22.209,0L153.67,183.707L37.907,67.959     c-6.134-6.13-16.08-6.13-22.209,0L4.597,79.06c-6.129,6.133-6.129,16.067,0,22.201l137.83,137.829     c6.129,6.136,16.067,6.136,22.203,0l137.815-136.096C308.589,96.864,308.589,86.926,302.445,80.796z"></path>
+							</g>
+						</g>
+					</svg>
+				</div>
+				<div class="error" error_id="{{bawk[0]}}"}></div>
+			</div>
+			{% if bawk[3]: %}
+				<div class="col-md-8 text-left">{{bawk[3].strftime('%A, %b, 
+				%d %Y') }}</div>					
+			{% endif %}
+		</div>
+	{% endfor %}
+
+</div>
 
 {% endblock %}
