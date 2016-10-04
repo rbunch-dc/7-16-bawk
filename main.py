@@ -130,18 +130,29 @@ def process_vote():
 	pid = request.form['vid'] # the post they voted on. This came from jquery $.ajax
 	vote_type = request.form['voteType']
 	check_user_votes_query = "SELECT * FROM votes INNER JOIN user ON user.id = votes.uid WHERE user.username = '%s' AND votes.pid = '%s'" % (session['username'], pid)
-	print check_user_votes_query
+	# print check_user_votes_query
 	cursor.execute(check_user_votes_query)
 	check_user_votes_result = cursor.fetchone()
 
 	# It's possible we get None back, becaues the user hsn't voted on this post
 	if check_user_votes_result is None:
 		# User hasn't voted. Insert.
-		insert_user_vote_query = "INSERT INTO votes (pid, uid, vote_type) VALUES ('"+pid+"', '"+session['id']+"', '"+vote_type+"')"
-		print insert_user_vote_query
+		insert_user_vote_query = "INSERT INTO votes (pid, uid, vote_type) VALUES ('"+str(pid)+"', '"+str(session['id'])+"', '"+str(vote_type)+"')"
+		# print insert_user_vote_query
 		cursor.execute(insert_user_vote_query)
 		conn.commit()
 		return jsonify("voteCounted")
+	else:
+		check_user_vote_direction_query = "SELECT * FROM votes INNER JOIN user ON user.id = votes.uid WHERE user.username = '%s' AND votes.pid = '%s' AND votes.vote_type = %s" % (session['username'], pid, vote_type)
+		cursor.execute(check_user_vote_direction_query)
+		check_user_vote_direction_result = cursor.fetchone()
+		if check_user_vote_direction_result is None:
+			# User has voted, but not this direction. Update
+			update_user_vote_query = "UPDATE votes SET vote_type = %s WHERE uid = '%s' AND pid = '%s'" % (vote_type, session['id'], pid)
+			return "voteChanged"
+		else:
+			# User has already voted this directino on this post. No dice.
+			return "alreadyVoted"
 
 if __name__ == "__main__":
 	app.run(debug=True)
