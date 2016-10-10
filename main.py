@@ -28,7 +28,7 @@ cursor = conn.cursor()
 # Create route for home page
 @app.route('/')
 def index():
-	get_bawks_query = "SELECT b.id, b.post_content, b.current_vote, b.timestamp, u.username, b.current_vote FROM bawks AS b INNER JOIN user u ON b.uid = u.id WHERE 1"
+	get_bawks_query = "SELECT b.id, b.post_content, b.current_vote, b.timestamp, u.username, SUM(v.vote_type) FROM bawks b INNER JOIN user u ON b.uid = u.id INNER JOIN votes v ON v.pid = b.id WHERE 1 GROUP BY v.pid"
 	cursor.execute(get_bawks_query)
 	get_bawks_result = cursor.fetchall()
 	if get_bawks_result is not None:
@@ -151,10 +151,14 @@ def process_vote():
 			update_user_vote_query = "UPDATE votes SET vote_type = %s WHERE uid = '%s' AND pid = '%s'" % (vote_type, session['id'], pid)
 			cursor.execute(update_user_vote_query)
 			conn.commit()
-			return "voteChanged"
+			get_new_total_query = "SELECT sum(vote_type) as vote_total FROM votes WHERE pid = '%s' GROUP BY pid" % pid
+			cursor.execute(get_new_total_query)
+			get_new_total_result = cursor.fetchone()
+			return jsonify({'message': "voteChanged", 'vote_total': int(get_new_total_result[0])})
 		else:
 			# User has already voted this directino on this post. No dice.
-			return "alreadyVoted"
+			return jsonify({'message': "alreadyVoted"})
+
 
 if __name__ == "__main__":
 	app.run(debug=True)
