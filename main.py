@@ -179,9 +179,19 @@ def follow():
 	cursor.execute(get_all_not_following_query)
 	get_all_not_following_result = cursor.fetchall()
 
+	return render_template ('follow.html',
+		following_list = get_all_following_result,
+		not_following_list = get_all_not_following_result
+	)
 
 
-	return render_template ('follow.html')
+@app.route('/follow_user')
+def follow_user():
+	user_id_to_follow = request.args.get('user_id')
+	follow_query = "INSERT INTO follow (uid_of_user_being_followed, uid_of_user_following) VALUES ('%s', '%s')" % (user_id_to_follow, session['id'])
+	cursor.execute(follow_query)
+	conn.commit()
+	return redirect('/follow')
 
 
 import urllib2
