@@ -169,7 +169,7 @@ def follow():
 
 	# Who user is following
 	# We want username and id
-	get_all_following_query = "SELECT u.username, f.uid_of_user_being_followed FROM follow f LEFT JOIN user u ON u.id = f.uid_of_user_being_followed WHERE f.uid_of_user_following = '%s'" % session['id']
+	get_all_following_query = "SELECT f.uid_of_user_being_followed, u.username FROM follow f LEFT JOIN user u ON u.id = f.uid_of_user_being_followed WHERE f.uid_of_user_following = '%s'" % session['id']
 	cursor.execute(get_all_following_query)
 	get_all_following_result = cursor.fetchall()
 
@@ -190,6 +190,16 @@ def follow_user():
 	user_id_to_follow = request.args.get('user_id')
 	follow_query = "INSERT INTO follow (uid_of_user_being_followed, uid_of_user_following) VALUES ('%s', '%s')" % (user_id_to_follow, session['id'])
 	cursor.execute(follow_query)
+	conn.commit()
+	return redirect('/follow')
+
+
+@app.route('/unfollow_user')
+def unfollow_user():
+	user_id_to_unfollow = request.args.get('user_id')
+	unfollow_query = "DELETE FROM follow WHERE uid_of_user_being_followed = '%s' AND uid_of_user_following = '%s'" % (user_id_to_unfollow, session['id'])
+	# return unfollow_query
+	cursor.execute(unfollow_query)
 	conn.commit()
 	return redirect('/follow')
 
