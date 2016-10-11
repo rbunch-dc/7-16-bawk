@@ -19,6 +19,8 @@ $(document).ready(function(){
 				}else if(result.message == 'alreadyVoted'){
 					// THe users's vote was not updated for whatever reason. Let them Know
 					$("div[up-down-id='" + vid + "']").html('You have already voted on this bawk!')
+				}else if(result.message == 'voteCounted'){
+					$("div[up-down-id='" + vid + "']").html(result.vote_total)
 				}
 				console.log(result)
 			}

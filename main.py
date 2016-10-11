@@ -141,7 +141,9 @@ def process_vote():
 		# print insert_user_vote_query
 		cursor.execute(insert_user_vote_query)
 		conn.commit()
-		return jsonify("voteCounted")
+		cursor.execute(get_new_total_query)
+		get_new_total_result = cursor.fetchone()
+		return jsonify({'message': "voteCounted", 'vote_total': int(get_new_total_result[0])})
 	else:
 		check_user_vote_direction_query = "SELECT * FROM votes INNER JOIN user ON user.id = votes.uid WHERE user.username = '%s' AND votes.pid = '%s' AND votes.vote_type = %s" % (session['username'], pid, vote_type)
 		cursor.execute(check_user_vote_direction_query)
@@ -159,6 +161,36 @@ def process_vote():
 			# User has already voted this directino on this post. No dice.
 			return jsonify({'message': "alreadyVoted"})
 
+@app.route('/follow')
+def follow():
+	get_all_not_me_users_query = "SELECT * FROM users WHERE id != '%s'" % session['id']
+
+	# get_all_following_query = "SELECT * FROM follow INNER JOIN user ON follow.uid_of_user_following = '%s'" % session['id']
+
+	# Who user is following
+	# We want username and id
+	get_all_following_query = "SELECT u.username, f.uid_of_user_being_followed FROM follow f LEFT JOIN user u ON u.id = f.uid_of_user_being_followed WHERE f.uid_of_user_following = '%s'" % session['id']
+	cursor.execute(get_all_following_query)
+	get_all_following_result = cursor.fetchall()
+
+	# who user is not following 
+	# -- all users in user table minus those user is following
+	get_all_not_following_query = "SELECT id, username FROM user WHERE id NOT IN (SELECT uid_of_user_being_followed FROM follow WHERE uid_of_user_following = '%s') AND id != '%s'" % (session['id'],session['id'])
+	cursor.execute(get_all_not_following_query)
+	get_all_not_following_result = cursor.fetchall()
+
+
+
+	return render_template ('follow.html')
+
+
+import urllib2
+@app.route('/get')
+def get():
+	response = urllib2.urlopen("http://projects.digitalcrafts.com/baseball.html")
+	page_source = response.read()
+	print page_source
+	return page_source
 
 if __name__ == "__main__":
 	app.run(debug=True)
